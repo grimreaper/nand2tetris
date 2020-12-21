@@ -4,9 +4,8 @@ Or
 Xor
 Mux
 DMux
-
-
 Not16
+
 And16
 Or16
 Mux16
