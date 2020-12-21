@@ -13,5 +13,18 @@ CHIP Or8Way {
     OUT out;
 
     PARTS:
-    // Put your code here:
+
+	// do 2-way ors
+
+	Or(a=in[7], b=in[6], out=term76);
+	Or(a=in[5], b=in[4], out=term54);
+	Or(a=in[3], b=in[2], out=term32);
+	Or(a=in[1], b=in[0], out=term10);
+
+	// 4-way-ors
+	Or(a=term76, b=term54, out=term7654);
+	Or(a=term32, b=term10, out=term3210);
+
+	// 8-way-or
+	Or(a=term7654, b=term3210, out=out);
 }
