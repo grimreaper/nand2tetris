@@ -14,5 +14,15 @@ CHIP Mux {
     OUT out;
 
     PARTS:
-    // Put your code here:
+    // (sel and B) or (Not (SEL) and A)
+
+    // Creates names for Not
+    Not(in=sel, out=NotSEL);
+
+    // Terms
+    And(a=sel, b=b, out=SELandB);
+    And(a=NotSEL, b=a, out=NotSELandA);
+
+    // Match
+    Or(a=SELandB, b=NotSELandA, out=out);
 }
