@@ -27,5 +27,33 @@ CHIP Memory {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+
+	// 5432109876543210
+	// 0000000000000000 -- memory
+	// 0011111111111111 -- memory
+	// 0100000000000000 -- screen
+	// 0101111111111111 -- screen
+	// 0110000000000000 -- kbd
+
+	//  43
+	// 000 == memory
+	// 001 == memory
+	// 010 == screen
+	// 011 == kbd
+
+	Not(in=address[14], out=doRam);
+	And(a=doRam, b=load, out=doLoadRam);
+	RAM16K(in=in, load=doLoadRam, address=address[0..13], out=ramOut);
+
+	// muxable but I'm tired :)
+	Not(in=address[13], out=notAddr13);
+	And(a=address[14], b=notAddr13, out=doScreen);
+	And(a=address[14], b=address[13], out=doKbd);
+
+	And(a=load, b=doScreen, out=doLoadScreen);
+
+	Screen(in=in, load=doLoadScreen, address=address[0..12], out=screenOut);
+	Keyboard(out=kbdOut);
+
+	Mux4Way16(sel=address[13..14], a=ramOut, b=ramOut, c=screenOut, d=kbdOut, out=out);
 }
