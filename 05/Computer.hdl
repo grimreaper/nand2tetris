@@ -19,5 +19,10 @@ CHIP Computer {
     IN reset;
 
     PARTS:
-    // Put your code here:
+
+	ROM32K(address=pc, out=insnROM);
+	CPU(inM=inM, instruction=insnROM, reset=reset,outM=outM, writeM=doLoad, addressM=addressM, pc=pc, addressM[0..13]=ramAddr, addressM[0..12]=screenAddr); // clocked!
+	Memory(in=outM, load=doLoad, address=addressM, out=inM);
+	Screen(in=outM, address=screenAddr, load=doLoad, out=nil1);
+	Keyboard(out=nil2);
 }

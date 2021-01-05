@@ -39,5 +39,55 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+
+    // i  -  -  a  c6 c4 c3 c2 c1 c0 d2 d1 d0 j2 j1 j0
+    // 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
+	// 0  m  m  m  m  m  m  m  m  m  m  m  m  m  m  m
+
+	// 11-6: ALU control
+	// 5-3: dest load
+	// 2-0: jump
+
+	// A instruction (@number)
+	Not(in=instruction[15], out=doAInst);
+
+	Mux16(a=ALUOut, b=instruction, sel=doAInst, out=ALUOrInst);
+
+	Or(a=doAInst, b=instruction[5], out=doALoad);
+	ARegister(in=ALUOrInst,	load=doALoad, out=A, out[0..14]=addressM);
+
+	// either an A instruction or the d3 bit should load D
+	And(a=instruction[15], b=instruction[4], out=doLoadD);
+
+	DRegister(in=ALUOut,load=doLoadD, out=D);
+
+    And(a=instruction[15], b=instruction[12], out=doAorM);
+    Mux16(a=A, b=inM, sel=doAorM, out=AorMOut);
+
+
+	ALU(x=D, y=AorMOut, out=ALUOut, out=outM, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], zr=isZero, ng=isNegative);
+
+	// we're a C instruction and we load to mmemory
+	And(a=instruction[15], b=instruction[3], out=writeM);
+
+	// PC
+	Not(in=isNegative, out=isPositive);
+	Not(in=isZero, out=notZero);
+
+	// we're a ctype instruction and we have a conditional jump
+	And(a=instruction[15], b=instruction[0], out=isJumpGreaterZero);
+	And(a=instruction[15], b=instruction[1], out=isJumpZero);
+	And(a=instruction[15], b=instruction[2], out=isJumpLessZero);
+
+	And(a=isPositive, b=notZero, out=isStrictlyPositive);
+	And(a=isNegative, b=notZero, out=isStrictlyNegative);
+
+	And(a=isJumpGreaterZero, b=isStrictlyPositive, out=doJumpPositive);
+	And(a=isJumpZero, b=isZero, out=doJumpZero);
+	And(a=isJumpLessZero, b=isStrictlyNegative, out=doJumpNegative);
+
+	Or(a=doJumpPositive, b=doJumpZero, out=doJumpPositiveZero);
+	Or(a=doJumpPositiveZero, b=doJumpNegative, out=doJump);
+
+	PC(in=A, load=doJump, inc=true, reset=reset, out[0..14]=pc);
 }
